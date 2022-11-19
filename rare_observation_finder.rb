@@ -38,7 +38,7 @@ class RareObservationFinder
     @observations.sort! { |a, b| a.taxon_observations <=> b.taxon_observations }
     NUM_RAREST_TO_DISPLAY.times do |num|
       obs = @observations[num]
-      puts "#{num + 1}. You observed the #{obs.taxon_rank} #{obs.common_name} (#{obs.taxon_name}) at #{obs.time_observed_at}, which has only been observed #{obs.taxon_observations} times."
+      puts "#{num + 1}. You observed the #{obs.taxon_rank} #{obs.common_name} (#{obs.taxon_name}) at #{obs.time_observed_at}, which has only been observed #{obs.taxon_observations} times. [#{obs.quality_grade}]"
     end
   end
 

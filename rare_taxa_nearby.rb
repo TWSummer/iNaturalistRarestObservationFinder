@@ -61,6 +61,8 @@ class RareTaxaNearby
 
     NUM_RAREST_TO_DISPLAY.times do |num|
       taxon = @taxa[num]
+      next unless taxon
+      
       puts "#{num + 1}. #{taxon.rank} #{taxon.common_name} (#{taxon.name}) has #{taxon.total_observations} total observations, of which #{taxon.local_observations} are local."
     end
   end
