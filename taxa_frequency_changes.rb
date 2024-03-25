@@ -3,15 +3,19 @@ require 'json'
 
 class TaxaFrequencyChanges
     def initialize
+        @target_taxa = []
         @total_counts = {}
         @taxon_counts = []
         @requests = []
     end
 
     def run
-        pick_taxa_to_check
-        get_total_counts_by_year
-        get_taxa_counts_by_year
+        begin
+            pick_taxa_to_check
+            get_total_counts_by_year
+            get_taxa_counts_by_year
+        rescue   
+        end
         save_results
     end
 
@@ -49,13 +53,16 @@ class TaxaFrequencyChanges
     def pick_taxa_to_check
         puts "Picking taxa to check"
 
-        response = make_request("https://api.inaturalist.org/v1/observations/species_counts?verifiable=true&identified=true&per_page=25")
-        @target_taxa = response['results'].map do |result| 
-            {
-                id: result['taxon']['id'],
-                name: result['taxon']['name'],
-                common_name: result['taxon']['preferred_common_name']
-            }
+        (1..5).each do |page|
+            puts "page ##{page}"
+            response = make_request("https://api.inaturalist.org/v1/observations/species_counts?verifiable=true&identified=true&per_page=500&page=#{page}")
+            response['results'].each do |result| 
+                @target_taxa << {
+                    id: result['taxon']['id'],
+                    name: result['taxon']['name'],
+                    common_name: result['taxon']['preferred_common_name']
+                }
+            end
         end
     end
 
@@ -70,24 +77,32 @@ class TaxaFrequencyChanges
     end
 
     def make_request(url)
-        # if @requests.length < 60
+        # if @requests.length < 10
             
-        # elsif @requests.first < Time.now - 60
+        # elsif @requests.first < Time.now - 10
         #     @requests.shift
         # else
-        #     while @requests.first >= Time.now - 60
+        #     while @requests.first >= Time.now - 10
         #         sleep 0.25
         #     end
-        #     p @requests.shift
+        #     @requests.shift
         # end
         sleep(1)
-        uri = URI(url)
-        # @requests << Time.now
-        JSON.parse(Net::HTTP.get(uri))
+
+        begin
+            uri = URI(url)
+            # @requests << Time.now
+            JSON.parse(Net::HTTP.get(uri))
+        rescue
+            puts "Request failed, retrying"
+            sleep(60)
+            uri = URI(url)
+            JSON.parse(Net::HTTP.get(uri))
+        end
     end
 
     def target_years
-        (2010..2024).to_a
+        (2012..2023).to_a
     end
 end
 
